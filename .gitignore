@@ -3,3 +3,9 @@
 imnet_resnet50_scratch/timm_temp/
 .dumbo.json
 checkpoints/
+
+# ignore wandb files
+wandb/
+
+# ignore downloaded datasets/models
+cifar-100-python*

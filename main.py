@@ -2,6 +2,7 @@
 # All rights reserved.
 import argparse
 import datetime
+import sys
 import numpy as np
 import time
 import torch
@@ -23,8 +24,8 @@ from losses import DistillationLoss
 from samplers import RASampler
 from augment import new_data_aug_generator
 
-import models
-import models_v2
+# import models
+# import models_v2
 
 import utils
 
@@ -149,9 +150,10 @@ def get_args_parser():
     # * Cosub params
     parser.add_argument('--cosub', action='store_true') 
     
-    # * Finetuning params
-    parser.add_argument('--finetune', default='', help='finetune from checkpoint')
+    # * Finetuning params 
+    parser.add_argument('--finetune', default='', help='finetune from checkpoint') # not used, keap empty
     parser.add_argument('--attn-only', action='store_true') 
+    parser.add_argument('--pretrained', action='store_true')
     
     # Dataset parameters
     parser.add_argument('--data-path', default='/datasets01/imagenet_full_size/061417/', type=str,
@@ -185,10 +187,18 @@ def get_args_parser():
     parser.add_argument('--world_size', default=1, type=int,
                         help='number of distributed processes')
     parser.add_argument('--dist_url', default='env://', help='url used to set up distributed training')
+
+    # use wandb
+    parser.add_argument('--wandb', action='store_true', help='use wandb')
     return parser
 
 
 def main(args):
+    if args.wandb:
+        import wandb
+        wandb.init(project='deit')
+        wandb.config.update(args)
+
     utils.init_distributed_mode(args)
 
     print(args)
@@ -210,6 +220,9 @@ def main(args):
     dataset_val, _ = build_dataset(is_train=False, args=args)
 
     if args.distributed:
+        # distributed may cause error, not tested yet
+        print('Distributed training is not tested yet, may create unexpected error.')
+
         num_tasks = utils.get_world_size()
         global_rank = utils.get_rank()
         if args.repeated_aug:
@@ -262,7 +275,7 @@ def main(args):
     print(f"Creating model: {args.model}")
     model = create_model(
         args.model,
-        pretrained=False,
+        pretrained=True,
         num_classes=args.nb_classes,
         drop_rate=args.drop,
         drop_path_rate=args.drop_path,
@@ -373,7 +386,7 @@ def main(args):
         print(f"Creating teacher model: {args.teacher_model}")
         teacher_model = create_model(
             args.teacher_model,
-            pretrained=False,
+            pretrained=args.pretrained,
             num_classes=args.nb_classes,
             global_pool='avg',
         )

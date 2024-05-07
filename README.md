@@ -1,5 +1,12 @@
 # Data-Efficient architectures and training for Image classification
 
+Finetune deit3-s on CIFAR100 dataset prompt: (try reducing batch size if GPU OutOfMemory.)
+```bash
+NVIDIA_VISIBLE_DEVICES=0 python main.py --model deit3_small_patch16_224 --data-set CIFAR --data-path ./ --batch 768 --lr 5e-6 --epochs 1000 --weight-decay 0.02 --sched cosine --input-size 224 --eval-crop-ratio 1.0 --reprob 0.0 --smoothing 0.1 --warmup-epochs 5 --drop 0.0 --seed 0 --opt adamW --warmup-lr 1e-6 --mixup 0.8 --drop-path 0.05 --cutmix 1.0 --unscale-lr  --color-jitter 0.3 --ThreeAugment --pretrained --output_dir ./save --wandb
+```
+
+---
+
 This repository contains PyTorch evaluation code, training code and pretrained models for the following papers:
 <details>
 <summary>

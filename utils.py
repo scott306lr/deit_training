@@ -78,9 +78,10 @@ class SmoothedValue(object):
 
 
 class MetricLogger(object):
-    def __init__(self, delimiter="\t"):
+    def __init__(self, delimiter="\t", wandb=False):
         self.meters = defaultdict(SmoothedValue)
         self.delimiter = delimiter
+        self.wandb = False
 
     def update(self, **kwargs):
         for k, v in kwargs.items():
@@ -157,6 +158,10 @@ class MetricLogger(object):
         total_time_str = str(datetime.timedelta(seconds=int(total_time)))
         print('{} Total time: {} ({:.4f} s / it)'.format(
             header, total_time_str, total_time / len(iterable)))
+        
+        if self.wandb:
+            import wandb
+            wandb.log({name: meter.global_avg for name, meter in self.meters.items()})
 
 
 def _load_checkpoint_for_ema(model_ema, checkpoint):
